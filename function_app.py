@@ -20,7 +20,7 @@ def openai_function_app(req: func.HttpRequest) -> func.HttpResponse:
         # AzureOpenAI.api_type = 'azure'
         api_version = '2024-11-20'  # Replace with your actual deployed version
         #get_json()
-        user_input = req.route_params.get('prompt')
+        user_input = req.get_json().get('prompt')
         if not user_input:
             return func.HttpResponse("Missing 'prompt' in request body.", status_code=400)
 
