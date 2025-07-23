@@ -1,8 +1,3 @@
-# Starter Azure Function App: TRAPPUS Command Receiver
-# Language: Python (v3.9+)
-# Trigger: HTTP Trigger
-# Purpose: Receive plain English commands and send them to OpenAI (TRAPPUS) for interpretation
-
 import logging
 import json
 from openai import AzureOpenAI
