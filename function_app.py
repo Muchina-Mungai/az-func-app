@@ -5,7 +5,7 @@ import logging
 
 app = func.FunctionApp()
 @app.function_name(name="HttpTrigger1")
-@app.route(route="main",auth_level=func.Auth_Level.ANONYMOUS)
+@app.route(route="main")
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
