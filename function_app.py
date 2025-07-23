@@ -10,7 +10,7 @@ from azure.keyvault.secrets import SecretClient
 
 
 app = func.FunctionApp()
-@app.route(route='openai_function_app')
+@app.route(route='openai_function_app', auth_level=func.AuthLevel.ANONYMOUS)
 def openai_function_app(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('TRAPPUS Function received a request.')
 
