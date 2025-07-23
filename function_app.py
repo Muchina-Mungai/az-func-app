@@ -1,5 +1,6 @@
 import logging
 import json
+import datetime
 from openai import AzureOpenAI
 import azure.functions as func
 from azure.identity import DefaultAzureCredential
