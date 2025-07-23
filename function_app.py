@@ -6,10 +6,6 @@ import azure.functions as func
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
-# Set your Azure OpenAI API key and endpoint (store these in Azure Key Vault ideally,DONE)
-
-
-
 app = func.FunctionApp()
 @app.route(route='openai_function_app', auth_level=func.AuthLevel.ANONYMOUS)
 def openai_function_app(req: func.HttpRequest) -> func.HttpResponse:
@@ -41,9 +37,9 @@ def openai_function_app(req: func.HttpRequest) -> func.HttpResponse:
             temperature=0.3,
             max_tokens=500
         )
-
-        answer = response.choices[0].message.content
-        logging.info(f"TRAPPUS response: {answer}")
+        if response:
+         answer = response.choices[0].message.content
+         logging.info(f"TRAPPUS response: {answer}")
 
         return func.HttpResponse(json.dumps({"response":answer}), status_code=200)
 
