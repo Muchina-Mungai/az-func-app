@@ -1,27 +1,56 @@
-import azure.functions as func
-import datetime
-import json
+# Starter Azure Function App: TRAPPUS Command Receiver
+# Language: Python (v3.9+)
+# Trigger: HTTP Trigger
+# Purpose: Receive plain English commands and send them to OpenAI (TRAPPUS) for interpretation
+
 import logging
+from openai import AzureOpenAI
+import azure.functions as func
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
+# Set your Azure OpenAI API key and endpoint (store these in Azure Key Vault ideally,DONE)
+
+credential=DefaultAzureCredential()
+client=SecretClient(vault_url='https://trappus-key-vault.vault.azure.net/',credential=credential)
+api_key = client.get_secret('OPENAI-API-KEY').value
+api_endpoint = client.get_secret('OPENAI-ENDPOINT').value
+# AzureOpenAI.api_type = 'azure'
+api_version = '2024-11-20'  # Replace with your actual deployed version
+
+azure_openai_client=AzureOpenAI(azure_endpoint=api_endpoint,api_key=api_key,api_version=api_version)
 app = func.FunctionApp()
-@app.function_name(name="HttpTrigger1")
-@app.route(route="main")
+MODEL_NAME = "gpt-4o"  # Adjust to your deployed model ID if different
+@app.function_name(name="openai_function_app")
+@app.route(route='main')
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    logging.info('TRAPPUS Function received a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    try:
+        user_input = req.get_json().get('prompt')
+        if not user_input:
+            return func.HttpResponse("Missing 'prompt' in request body.", status_code=400)
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed so  successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
+        logging.info(f"User prompt: {user_input}")
+
+        # Call OpenAI
+        response = azure_openai_client.chat.completions.create(
+            engine=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": "You are TRAPPUS, an automation assistant for Azure and WordPress."},
+                {"role": "user", "content": user_input}
+            ],
+            temperature=0.3,
+            max_tokens=500
         )
+
+        answer = response['choices'][0]['message']['content']
+        logging.info(f"TRAPPUS response: {answer}")
+
+        return func.HttpResponse(answer, status_code=200)
+
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        return func.HttpResponse(f"Internal server error: {str(e)}", status_code=500)
+    
+   
