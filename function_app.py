@@ -4,6 +4,7 @@
 # Purpose: Receive plain English commands and send them to OpenAI (TRAPPUS) for interpretation
 
 import logging
+import json
 from openai import AzureOpenAI
 import azure.functions as func
 from azure.identity import DefaultAzureCredential
@@ -44,13 +45,12 @@ def openai_function_app(req: func.HttpRequest) -> func.HttpResponse:
             max_tokens=500
         )
 
-        answer = response['choices'][0]['message']['content']
+        answer = response.choices[0].message.content
         logging.info(f"TRAPPUS response: {answer}")
 
-        return func.HttpResponse(answer, status_code=200)
+        return func.HttpResponse(json.dumps({"response":answer}), status_code=200)
 
     except Exception as e:
         logging.error(f"Error: {str(e)}")
         return func.HttpResponse(f"Internal server error: {str(e)}", status_code=500)
     
-   
